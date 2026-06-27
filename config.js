@@ -64,6 +64,12 @@ const RETIREMENT_CONFIG = {
       // 2026 Absolute Limit per unrelated employer plan
       let singlePlanMaxSpace = RETIREMENT_CONFIG.constants.irsLimits2026.megaBackdoorTotalLimit; // $72,000
       let catchUp = 0;
+// Calculate base employer room, capped by the 2026 IRS compensation limit
+const maxEligibleIncome = Math.min(netSideIncome, 360000); 
+const rawEmployerContribution = chooseToTakeProfitSharing ? (maxEligibleIncome * 0.20) : 0;
+
+// Then, clip it so it never individually exceeds the absolute plan cap
+const employerContribution = Math.min(rawEmployerContribution, absolutePlanCap);
 
       // Adjust for age catch-ups if applicable
       if (age >= 50 && age <= 59) {
