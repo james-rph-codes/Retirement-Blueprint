@@ -95,6 +95,10 @@
                 <label>Net 1099 Side Income:</label>
                 <input type="number" id="input-1099-inc" value="30000" oninput="runCalculations()">
             </div>
+            <div class="flex-row">
+                <label>Take Pre-Tax Employer Match?</label>
+                <input type="checkbox" id="input-take-match" onchange="runCalculations()" style="width: auto;">
+            </div>
             <hr style="border-color: var(--border-color); margin: 15px 0;">
             <div class="flex-row">
                 <span>Employer Match (20% Profit):</span>
@@ -174,8 +178,10 @@
             const age = parseInt(document.getElementById('input-age').value) || 30;
             const w2Contributions = parseFloat(document.getElementById('input-w2-used').value) || 0;
             const sideIncome = parseFloat(document.getElementById('input-1099-inc').value) || 0;
+            const takeMatch = document.getElementById('input-take-match').checked;
+            const outputs = RETIREMENT_CONFIG.formulas.calculateSolo401kMax(age, w2Contributions, sideIncome, takeMatch);
 
-            const outputs = RETIREMENT_CONFIG.formulas.calculateSolo401kMax(age, w2Contributions, sideIncome);
+            // Old formula const outputs = RETIREMENT_CONFIG.formulas.calculateSolo401kMax(age, w2Contributions, sideIncome);
 
             document.getElementById('out-solo-employer').innerText = `$${outputs.employerContribution.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
             document.getElementById('out-solo-aftertax').innerText = `$${outputs.afterTaxSpaceLeft.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
