@@ -59,34 +59,39 @@ const RETIREMENT_CONFIG = {
 
   // Logic isolation layer
   formulas: {
-    // Computes Solo 401(k) / 1099 After-Tax space depending on already used W-2 spaces
-    calculateSolo401kMax: (age, w2ElectiveContribution, sideIncome) => {
-      let baseLimit = RETIREMENT_CONFIG.constants.irsLimits2026.fourOOneK_fourOThreeB;
-      let totalMaxSpace = RETIREMENT_CONFIG.constants.irsLimits2026.megaBackdoorTotalLimit;
+    // Computes Solo 401(k) / 1099 After-Tax space using correct Section 415(c) rules
+    calculateSolo401kMax: (age, w2ElectiveContribution, netSideIncome) => {
+      // 2026 Defined Contribution Limit per unrelated employer
+      let singlePlanMaxSpace = RETIREMENT_CONFIG.constants.irsLimits2026.megaBackdoorTotalLimit; // $72,000
+      let catchUp = 0;
 
+      // Adjust for age catch-ups if applicable (catch-up expands the total cap)
       if (age >= 50 && age <= 59) {
-        baseLimit = RETIREMENT_CONFIG.constants.irsLimits2026.fourOOneK_catchUp_50_59;
-        totalMaxSpace = RETIREMENT_CONFIG.constants.irsLimits2026.megaBackdoorTotalLimit_50_59;
+        catchUp = RETIREMENT_CONFIG.constants.irsLimits2026.fourOOneK_catchUp_50_59 - RETIREMENT_CONFIG.constants.irsLimits2026.fourOOneK_fourOThreeB; // $8,000
       } else if (age >= 60 && age <= 63) {
-        baseLimit = RETIREMENT_CONFIG.constants.irsLimits2026.fourOOneK_catchUp_60_63;
-        totalMaxSpace = RETIREMENT_CONFIG.constants.irsLimits2026.megaBackdoorTotalLimit_60_63;
+        catchUp = RETIREMENT_CONFIG.constants.irsLimits2026.fourOOneK_catchUp_60_63 - RETIREMENT_CONFIG.constants.irsLimits2026.fourOOneK_fourOThreeB; // $11,250
       }
 
-      // Employee contribution space left
-      const employeeSpaceLeft = Math.max(0, baseLimit - w2ElectiveContribution);
-      // Employer non-elective match (20% of net side income)
-      const employerContribution = sideIncome * 0.20;
-      
-      // Total potential addition via regular means
-      const standardUsed = w2ElectiveContribution + employeeSpaceLeft + employerContribution;
-      // Remainder can be filled with After-Tax Space up to net self-employment income
-      const afterTaxSpaceLeft = Math.min(sideIncome, Math.max(0, totalMaxSpace - standardUsed));
+      // 1. Employee Deferral Space Left on the 1099 side
+      const baseEmployeeLimit = RETIREMENT_CONFIG.constants.irsLimits2026.fourOOneK_fourOThreeB;
+      const employeeSpaceLeft = Math.max(0, baseEmployeeLimit - w2ElectiveContribution);
+
+      // 2. Employer Profit Sharing (Nonelective) Space (capped at 20% of net self-employment income)
+      const employerContribution = netSideIncome * 0.20;
+
+      // 3. Voluntary After-Tax Space (The Mega Backdoor component)
+      // Total additions inside this specific plan cannot exceed $72k (plus age catch-up) OR 100% of income
+      const planCap = singlePlanMaxSpace + catchUp;
+      const absoluteMaxAllowedByIncome = Math.min(planCap, netSideIncome);
+
+      const standardUsedOnSide = employeeSpaceLeft + employerContribution;
+      const afterTaxSpaceLeft = Math.max(0, absoluteMaxAllowedByIncome - standardUsedOnSide);
 
       return {
         employeeSpaceLeft,
         employerContribution,
         afterTaxSpaceLeft,
-        totalSolo401kAllowed: employeeSpaceLeft + employerContribution + afterTaxSpaceLeft
+        totalSolo401kAllowed: standardUsedOnSide + afterTaxSpaceLeft
       };
     },
     
