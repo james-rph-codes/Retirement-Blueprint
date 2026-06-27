@@ -1,188 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retirement Blueprint Workspace</title>
-    <script src="config.js"></script>
-    <style>
-        :root {
-            --bg-dark: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent-cyan: #38bdf8;
-            --accent-green: #34d399;
-            --border-color: #334155;
-        }
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            max-width: 950px;
-            margin: 40px auto;
-            padding: 0 20px;
-            line-height: 1.5;
-        }
-        .header-area {
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        h1 { color: var(--accent-cyan); margin-bottom: 5px; }
-        h2 { color: #818cf8; font-size: 1.4rem; margin-top: 0; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-        }
-        .flex-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 0.95rem; }
-        .highlight { color: var(--accent-green); font-weight: 600; }
-        .note { font-size: 0.85rem; color: var(--text-muted); background: #0f172a; padding: 10px; border-radius: 6px; margin-top: 10px; border-left: 3px solid var(--accent-cyan); }
-        input, select {
-            background: #0f172a; border: 1px solid var(--border-color); color: white;
-            padding: 6px 10px; border-radius: 6px; width: 110px; text-align: right;
-        }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
-        th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
-        th { background-color: #0f172a; color: var(--accent-cyan); }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retirement Blueprint Blueprint & Compounding Simulator</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .step-card { transition: all 0.2s ease-in-out; }
+    .step-card:hover { transform: translateY(-2px); }
+  </style>
 </head>
-<body>
+<body class="bg-gray-900 text-gray-100 min-h-screen antialiased">
 
-    <div class="header-area">
-        <h1 id="main-title"></h1>
-        <p id="vibe-tag" style="color: var(--text-muted); margin: 0;"></p>
+<div class="max-w-6xl mx-auto px-4 py-8">
+  <header class="mb-10 text-center border-b border-gray-800 pb-6">
+    <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r bg-emerald-400 to-teal-300">
+      Core Retirement Roadmap
+    </h1>
+    <p class="text-gray-400 mt-2">Strategic thresholds & inflation-adjusted compound interest simulator</p>
+  </header>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+    <div class="lg:col-span-5 space-y-6">
+      <h2 class="text-2xl font-bold text-gray-200 tracking-wide flex items-center gap-2">
+        <span>📋</span> Structural Strategy Checklist
+      </h2>
+      <div id="strategy-steps-container" class="space-y-4">
+      </div>
     </div>
 
-    <div class="grid">
-        <div class="card">
-            <h2>Standard Retirement Tax Shields (2026)</h2>
-            <div class="flex-row">
-                <span>Roth 457(b) Limit:</span>
-                <span class="highlight" id="val-457"></span>
-            </div>
-            <div class="flex-row">
-                <span>457(b) DAR Limit (Last 3 Yrs):</span>
-                <span class="highlight" id="val-dar"></span>
-            </div>
-            <div class="flex-row">
-                <span>Roth 403(b) / 401(k) Limit:</span>
-                <span class="highlight" id="val-403"></span>
-            </div>
-            <div class="flex-row">
-                <span>Roth IRA Base Limit:</span>
-                <span class="highlight" id="val-ira"></span>
-            </div>
-            <div class="note" id="note-457"></div>
-        </div>
+    <div class="lg:col-span-7 bg-gray-800/50 rounded-2xl p-6 border border-gray-700 space-y-6">
+      <h2 class="text-2xl font-bold text-emerald-400 flex items-center gap-2">
+        <span>📈</span> VOO Compounding Simulator
+      </h2>
 
-        <div class="card">
-            <h2>Overemployment & Side Hustle Lab (1099)</h2>
-            <div class="flex-row">
-                <label>Your Current Age:</label>
-                <input type="number" id="input-age" value="32" oninput="runCalculations()">
-            </div>
-            <div class="flex-row">
-                <label>W-2 401k/403b Contribution:</label>
-                <input type="number" id="input-w2-used" value="24500" oninput="runCalculations()">
-            </div>
-            <div class="flex-row">
-                <label>Net 1099 Side Income:</label>
-                <input type="number" id="input-1099-inc" value="30000" oninput="runCalculations()">
-            </div>
-            <hr style="border-color: var(--border-color); margin: 15px 0;">
-            <div class="flex-row">
-                <span>Employer Match (20% Profit):</span>
-                <span class="highlight" id="out-solo-employer">$0</span>
-            </div>
-            <div class="flex-row">
-                <span>Max Mega Backdoor Roth Space:</span>
-                <span class="highlight" id="out-solo-aftertax">$0</span>
-            </div>
-            <div class="note" id="note-mega"></div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Starting Principal ($)</label>
+          <input type="number" id="calc-principal" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
         </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Monthly Contribution ($)</label>
+          <input type="number" id="calc-monthly" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Years to Grow</label>
+          <input type="number" id="calc-years" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Nominal Return Rate (% VOO)</label>
+          <input type="number" step="0.1" id="calc-nominal-rate" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Annual Inflation Rate Offset (%)</label>
+          <input type="number" step="0.1" id="calc-inflation-rate" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-white focus:outline-none focus:border-emerald-400">
+        </div>
+      </div>
 
-        <div class="card">
-            <h2>NYCERS Strategy Paths</h2>
-            <div class="note" id="note-t4" style="margin-bottom: 15px;"></div>
-            <div class="note" id="note-t6"></div>
-            
-            <h3 style="color: var(--accent-cyan); font-size: 1rem; margin: 15px 0 5px 0;">Leverage Capacity (Rule of 75 / 50)</h3>
-            <div class="flex-row">
-                <span>NYCERS Borrowing Threshold:</span>
-                <span>Lesser of 75% or $50,000</span>
-            </div>
-            <div class="flex-row">
-                <span>403(b) TDA Borrowing Threshold:</span>
-                <span>Lesser of 50% or $50,000</span>
-            </div>
-            <div class="note" id="note-margin"></div>
-        </div>
+      <div class="bg-gray-900 rounded-xl p-4 border border-gray-800">
+        <canvas id="compoundingChart" class="w-full h-64"></canvas>
+      </div>
 
-        <div class="card">
-            <h2>Social Security Payout Engine</h2>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 10px 0;">
-                Break-even analysis typically trends at age 81 based on an average life expectancy of 84-86.
-            </p>
-            <table id="ss-table">
-                <thead>
-                    <tr>
-                        <th>Claiming Age</th>
-                        <th>Status</th>
-                        <th>Permanent Impact</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+        <div class="bg-gray-900/80 rounded-xl p-4 border border-l-4 border-blue-500">
+          <div class="text-xs font-medium text-gray-400 uppercase">Future Cash Value</div>
+          <div id="summary-nominal" class="text-2xl font-bold text-blue-400 mt-1">$0</div>
+          <div class="text-[11px] text-gray-500 mt-0.5">Raw paper numbers printed at maturity.</div>
         </div>
+        <div class="bg-gray-900/80 rounded-xl p-4 border border-l-4 border-emerald-400">
+          <div class="text-xs font-medium text-gray-400 uppercase">Real Buying Power</div>
+          <div id="summary-real" class="text-2xl font-bold text-emerald-400 mt-1">$0</div>
+          <div class="text-[11px] text-gray-500 mt-0.5">Adjusted back to today's dollar value.</div>
+        </div>
+      </div>
     </div>
 
-    <script>
-        // Init Basic Config Content Into UI Layers
-        document.getElementById('main-title').innerText = RETIREMENT_CONFIG.metadata.title;
-        document.getElementById('vibe-tag').innerText = RETIREMENT_CONFIG.metadata.authorVibe;
-        
-        // Static strings injection
-        document.getElementById('note-457').innerText = RETIREMENT_CONFIG.strings.roth457Note;
-        document.getElementById('note-mega').innerText = RETIREMENT_CONFIG.strings.megaBackdoorNote;
-        document.getElementById('note-t4').innerText = RETIREMENT_CONFIG.strings.tier4Timeline;
-        document.getElementById('note-t6').innerText = RETIREMENT_CONFIG.strings.tier6Timeline;
-        document.getElementById('note-margin').innerText = RETIREMENT_CONFIG.strings.marginNote;
+  </div>
+</div>
 
-        // Static constants injection 
-        const limits = RETIREMENT_CONFIG.constants.irsLimits2026;
-        document.getElementById('val-457').innerText = `$${limits.fourFiveSevenB.toLocaleString()}`;
-        document.getElementById('val-dar').innerText = `$${limits.fourFiveSevenB_DAR.toLocaleString()}`;
-        document.getElementById('val-403').innerText = `$${limits.fourOOneK_fourOThreeB.toLocaleString()}`;
-        document.getElementById('val-ira').innerText = `$${limits.ira.toLocaleString()}`;
+<script src="config.js"></script>
+<script>
+  let chartInstance = null;
 
-        // Populate Social Security modifications from config array
-        const ssTableBody = document.getElementById('ss-table').getElementsByTagName('tbody')[0];
-        RETIREMENT_CONFIG.constants.socialSecurityModifications.forEach(row => {
-            let tr = document.createElement('tr');
-            tr.innerHTML = `<td><b>Age ${row.age}</b></td><td>${row.label}</td><td class="highlight">${row.impact}</td>`;
-            ssTableBody.appendChild(tr);
-        });
+  document.addEventListener("DOMContentLoaded", () => {
+      initializeStrategyRoadmap();
+      loadDefaultParameters();
+      executeSimulationEngine();
 
-        // Dynamic Lab Processing
-        function runCalculations() {
-            const age = parseInt(document.getElementById('input-age').value) || 30;
-            const w2Contributions = parseFloat(document.getElementById('input-w2-used').value) || 0;
-            const sideIncome = parseFloat(document.getElementById('input-1099-inc').value) || 0;
+      // Bind listener tracking events to trigger interactive rebuild loops
+      const activeInputs = ["calc-principal", "calc-monthly", "calc-years", "calc-nominal-rate", "calc-inflation-rate"];
+      activeInputs.forEach(id => {
+          document.getElementById(id).addEventListener("input", executeSimulationEngine);
+      });
+  });
 
-            const outputs = RETIREMENT_CONFIG.formulas.calculateSolo401kMax(age, w2Contributions, sideIncome);
+  function initializeStrategyRoadmap() {
+      const container = document.getElementById("strategy-steps-container");
+      container.innerHTML = "";
 
-            document.getElementById('out-solo-employer').innerText = `$${outputs.employerContribution.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
-            document.getElementById('out-solo-aftertax').innerText = `$${outputs.afterTaxSpaceLeft.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
-        }
+      RETIREMENT_CONFIG.strategySteps.forEach(step => {
+          const element = document.createElement("div");
+          element.className = "step-card bg-gray-800 border border-gray-700 rounded-xl p-5 shadow-sm";
+          element.innerHTML = `
+              <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-bold text-lg text-white">${step.title}</h3>
+                  <span class="text-xs px-2 py-0.5 font-semibold bg-gray-700 text-teal-300 rounded-full">${step.priority}</span>
+              </div>
+              <p class="text-sm text-gray-300 leading-relaxed">${step.details}</p>
+              <div class="text-[10px] text-gray-500 mt-3 text-right uppercase tracking-wider font-mono">Source: ${step.source}</div>
+          `;
+          container.appendChild(element);
+      });
+  }
 
-        // Boot
-        runCalculations();
-    </script>
+  function loadDefaultParameters() {
+      const defaults = RETIREMENT_CONFIG.calculatorDefaults;
+      document.getElementById("calc-principal").value = defaults.initialInvestment;
+      document.getElementById("calc-monthly").value = defaults.monthlyContribution;
+      document.getElementById("calc-years").value = defaults.yearsToGrow;
+      document.getElementById("calc-nominal-rate").value = defaults.nominalRate;
+      document.getElementById("calc-inflation-rate").value = defaults.inflationRate;
+  }
+
+  function executeSimulationEngine() {
+      const principal = parseFloat(document.getElementById("calc-principal").value) || 0;
+      const monthly = parseFloat(document.getElementById("calc-monthly").value) || 0;
+      const totalYears = parseInt(document.getElementById("calc-years").value) || 0;
+      const nominalAnnRate = (parseFloat(document.getElementById("calc-nominal-rate").value) || 0) / 100;
+      const inflationAnnRate = (parseFloat(document.getElementById("calc-inflation-rate").value) || 0) / 100;
+
+      // Derived Real Growth Rate using compounding formula math
+      // Real Rate = (1 + Nominal) / (1 + Inflation) - 1
+      const realAnnRate = ((1 + nominalAnnRate) / (1 + inflationAnnRate)) - 1;
+
+      const labels = [];
+      const nominalData = [];
+      const realData = [];
+
+      // Tracking variables inside the loops
+      let runningNominalVal = principal;
+      let runningRealVal = principal;
+
+      labels.push("Year 0");
+      nominalData.push(principal);
+      realData.push(principal);
+
+      // Compute math month by month to mimic dynamic dollar-cost averaging entries
+      const monthlyNominalRate = nominalAnnRate / 12;
+      const monthlyRealRate = realAnnRate / 12;
+
+      for (let year = 1; year <= totalYears; year++) {
+          for (let month = 1; month <= 12; month++) {
+              // Nominal update step
+              runningNominalVal = (runningNominalVal + monthly) * (1 + monthlyNominalRate);
+              // Real purchasing power update step
+              runningRealVal = (runningRealVal + monthly) * (1 + monthlyRealRate);
+          }
+          labels.push(`Year ${year}`);
+          nominalData.push(Math.round(runningNominalVal));
+          realData.push(Math.round(runningRealVal));
+      }
+
+      // Update Text Readout Blocks
+      document.getElementById("summary-nominal").innerText = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(runningNominalVal);
+      document.getElementById("summary-real").innerText = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(runningRealVal);
+
+      // Update Chart.js Instance
+      updateVisualChart(labels, nominalData, realData);
+  }
+
+  function updateVisualChart(labels, nominalData, realData) {
+      const ctx = document.getElementById("compoundingChart").getContext("2d");
+
+      if (chartInstance) {
+          chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+              labels: labels,
+              datasets: [
+                  {
+                      label: 'Future Value (Paper Cash Balance)',
+                      data: nominalData,
+                      borderColor: '#3b82f6',
+                      backgroundColor: 'transparent',
+                      borderWidth: 3,
+                      pointRadius: labels.length > 30 ? 0 : 2,
+                      tension: 0.15
+                  },
+                  {
+                      label: 'Buying Power (Inflation Adjusted)',
+                      data: realData,
+                      borderColor: '#10b981',
+                      backgroundColor: 'transparent',
+                      borderWidth: 3,
+                      pointRadius: labels.length > 30 ? 0 : 2,
+                      tension: 0.15
+                  }
+              ]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                  legend: { position: 'top', labels: { color: '#9ca3af', font: { size: 11 } } }
+              },
+              scales: {
+                  x: { grid: { color: '#1f2937' }, ticks: { color: '#9ca3af', font: { size: 10 } } },
+                  y: {
+                      grid: { color: '#1f2937' },
+                      ticks: {
+                          color: '#9ca3af',
+                          font: { size: 10 },
+                          callback: value => '$' + (value >= 1e6 ? (value/1e6).toFixed(1) + 'M' : (value/1e3).toFixed(0) + 'k')
+                      }
+                  }
+              }
+          }
+      });
+  }
+</script>
 </body>
 </html>
