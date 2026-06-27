@@ -82,13 +82,8 @@ const employerContribution = Math.min(rawEmployerContribution, absolutePlanCap);
       const baseEmployeeLimit = RETIREMENT_CONFIG.constants.irsLimits2026.fourOOneK_fourOThreeB;
       const employeeSpaceLeft = Math.max(0, baseEmployeeLimit - w2ElectiveContribution);
 
-      // --- FIX: ENFORCE THE COMPENSATION CAP HERE ---
-      // Read the $360,000 cap from your constants so it's dynamic
-      const annualCompCap = RETIREMENT_CONFIG.constants.irsLimits2026.compensationCap || 360000;
-      const eligibleIncome = Math.min(netSideIncome, annualCompCap);
-
-      // 2. Employer Profit Sharing Space (Discretionary, based on capped income)
-      const employerContribution = chooseToTakeProfitSharing ? (eligibleIncome * 0.20) : 0;
+      // 2. Employer Profit Sharing Space (Discretionary: Only calculated if explicitly turned on)
+      const employerContribution = chooseToTakeProfitSharing ? (netSideIncome * 0.20) : 0;
 
       // 3. Voluntary After-Tax Space (Mega Backdoor Roth Component)
       // The total additions in this single plan cannot exceed $72,000 (+ catch up) OR 100% of income
